@@ -1,0 +1,288 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>💘 Valentine</title>
+
+<style>
+  html, body { height: 100%; }
+  body{
+    margin:0;
+    min-height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    background: linear-gradient(135deg,#ffe6ef,#fff7fb);
+    font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    overflow:hidden;
+    padding: 18px;
+  }
+
+  .card{
+    background:white;
+    padding:28px;
+    border-radius:24px;
+    text-align:center;
+    box-shadow:0 20px 60px rgba(0,0,0,.15);
+    width:min(620px, 94vw);
+    position:relative;
+  }
+
+  h1{
+    font-size: clamp(24px, 4.2vw, 34px);
+    margin:12px 0 0;
+    line-height:1.15;
+  }
+
+  .gif{
+    width:180px;
+    height:180px;
+    margin:0 auto;
+    border-radius:20px;
+    overflow:hidden;
+    box-shadow:0 12px 30px rgba(0,0,0,.15);
+    background:#fff;
+  }
+
+  .gif img{
+    width:100%;
+    height:100%;
+    object-fit:cover;
+    display:block;
+  }
+
+  /* Button area */
+  .buttons{
+    margin-top:22px;
+    height:170px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    overflow:hidden;
+  }
+
+  .row{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:18px;
+    max-width:100%;
+  }
+
+  button{
+    border:none;
+    padding:14px 20px;
+    font-size:18px;
+    font-weight:800;
+    border-radius:16px;
+    cursor:pointer;
+    box-shadow:0 10px 25px rgba(0,0,0,.2);
+    user-select:none;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation; /* iPhone: prevents double-tap zoom behavior */
+    white-space:nowrap;
+    transition: transform .15s ease;
+  }
+
+  /* iOS: stop callout/select */
+  button, img, h1 { -webkit-user-select:none; user-select:none; -webkit-touch-callout:none; }
+
+  #ja{
+    background:#22c55e;
+    color:white;
+    transform-origin:center;
+    will-change: transform;
+  }
+
+  #nein{
+    background:#ef4444;
+    color:white;
+    flex: 0 0 auto;
+  }
+
+  .result{
+    display:none;
+    margin-top:18px;
+    font-size:22px;
+  }
+
+  .result .gif{
+    width:180px;
+    height:180px;
+    margin-top:6px;
+  }
+
+  /* confetti */
+  .confetti{
+    position:fixed;
+    inset:0;
+    pointer-events:none;
+  }
+  .confetti span{
+    position:absolute;
+    top:-10px;
+    width:10px;
+    height:16px;
+    animation:fall linear forwards;
+    border-radius:3px;
+    opacity:.95;
+  }
+  @keyframes fall{
+    to{ transform:translateY(110vh) rotate(720deg); }
+  }
+</style>
+</head>
+
+<body>
+
+<div class="card" id="card">
+
+  <!-- START GIF (bleibt bis JA) -->
+  <div class="gif" id="startGif">
+    <img src="bear_idle.gif" alt="bear gif">
+  </div>
+
+  <h1>Will you be my Valentine my Love ?</h1>
+
+  <div class="buttons" id="area">
+    <div class="row" id="row">
+      <button id="ja">Ja</button>
+      <button id="nein">Nei</button>
+    </div>
+  </div>
+
+  <!-- RESULT -->
+  <div class="result" id="result">
+    <div class="gif">
+      <img src="bear_yes.gif" alt="yes gif">
+    </div>
+    <div style="margin-top:12px">🥰💘 Yesss my Love!!</div>
+  </div>
+
+</div>
+
+<div class="confetti" id="confetti"></div>
+
+<script>
+  const neinTexts = [
+    "Nei",
+    "Bish sicher Ajlin?",
+    "Was wenn ich richtig nett fröge?",
+    "bitte bitte bitte",
+    "ich bring dir Blueme",
+    "und schoggi",
+    "BITTE MIS HERZ",
+    ":(",
+    "Ich stirb weg dir",
+    "bin tot",
+    "Ray 2001 - 2026 RIP",
+    "bitte my love",
+    ":(((((",
+    "BITTE BITTE BITTE",
+    "tot",
+    "no :("
+  ];
+
+  const jaBtn = document.getElementById("ja");
+  const neinBtn = document.getElementById("nein");
+  const area = document.getElementById("area");
+  const row = document.getElementById("row");
+  const result = document.getElementById("result");
+  const confetti = document.getElementById("confetti");
+  const startGif = document.getElementById("startGif");
+
+  let clicks = 0;
+
+  // Dominanz nach 10 Klicks, etwas extremer
+  const STEPS = 10;
+  const START_SCALE = 1.0;
+  const END_SCALE = 3.8;
+
+  function scaleForStep(step){
+    const t = Math.min(step, STEPS) / STEPS;
+    // leichte “ease-out” Kurve -> am Ende stärker
+    const eased = 1 - Math.pow(1 - t, 2);
+    return START_SCALE + (END_SCALE - START_SCALE) * eased;
+  }
+
+  function rand(min,max){ return Math.random()*(max-min)+min }
+
+  function popConfetti(){
+    confetti.innerHTML = "";
+    const colors = ["#ef4444","#22c55e","#eab308","#3b82f6","#ec4899"];
+    for(let i=0;i<120;i++){
+      const s = document.createElement("span");
+      s.style.left = rand(0,100) + "vw";
+      s.style.background = colors[Math.floor(Math.random()*colors.length)];
+      s.style.animationDuration = rand(1.4, 3.0) + "s";
+      s.style.animationDelay = rand(0, 0.2) + "s";
+      s.style.width = rand(7, 12) + "px";
+      s.style.height = rand(10, 18) + "px";
+      confetti.appendChild(s);
+    }
+    setTimeout(()=>confetti.innerHTML="", 3500);
+  }
+
+  function applyGrowth(step){
+    const s = scaleForStep(step);
+    jaBtn.style.transform = `scale(${s})`;
+
+    // Gap wächst leicht mit, damit "Nein" sichtbar nach aussen gedrückt wird
+    const gap = 18 + Math.min(step, STEPS) * 3;
+    row.style.gap = gap + "px";
+  }
+
+  function updateNeinText(step){
+    if (step < neinTexts.length) {
+      neinBtn.textContent = neinTexts[step];
+    } else {
+      neinBtn.textContent = "no :(";
+    }
+  }
+
+  // Initial
+  applyGrowth(0);
+  updateNeinText(0);
+
+  // iPhone: use pointer events where possible
+  neinBtn.addEventListener("click", (e)=>{
+    e.preventDefault();
+    clicks++;
+
+    updateNeinText(clicks);
+    applyGrowth(clicks);
+  });
+
+  // Bonus: Touchstart also triggers faster on some iPhones (avoid double trigger)
+  let touched = false;
+  neinBtn.addEventListener("touchstart", (e)=>{
+    if (touched) return;
+    touched = true;
+    e.preventDefault();
+    clicks++;
+
+    updateNeinText(clicks);
+    applyGrowth(clicks);
+
+    setTimeout(()=>{ touched = false; }, 250);
+  }, {passive:false});
+
+  jaBtn.addEventListener("click", ()=>{
+    area.style.display = "none";
+    startGif.style.display = "none";
+    result.style.display = "block";
+    popConfetti();
+  });
+
+  jaBtn.addEventListener("touchstart", (e)=>{
+    e.preventDefault();
+    area.style.display = "none";
+    startGif.style.display = "none";
+    result.style.display = "block";
+    popConfetti();
+  }, {passive:false});
+</script>
+
+</body>
+</html>
