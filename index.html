@@ -52,14 +52,13 @@
     display:block;
   }
 
-  /* Button area */
   .buttons{
     margin-top:22px;
-    height:170px;
+    height:180px;
     display:flex;
     align-items:center;
     justify-content:center;
-    overflow:hidden;
+    overflow:hidden; /* wichtig: nein kann „rausgedrückt“ werden */
   }
 
   .row{
@@ -72,7 +71,6 @@
 
   button{
     border:none;
-    padding:14px 20px;
     font-size:18px;
     font-weight:800;
     border-radius:16px;
@@ -80,25 +78,27 @@
     box-shadow:0 10px 25px rgba(0,0,0,.2);
     user-select:none;
     -webkit-tap-highlight-color: transparent;
-    touch-action: manipulation; /* iPhone: prevents double-tap zoom behavior */
+    touch-action: manipulation;
     white-space:nowrap;
-    transition: transform .15s ease;
+    transition: all .18s ease;
   }
 
-  /* iOS: stop callout/select */
   button, img, h1 { -webkit-user-select:none; user-select:none; -webkit-touch-callout:none; }
 
   #ja{
     background:#22c55e;
     color:white;
-    transform-origin:center;
-    will-change: transform;
+    padding:14px 22px;
+    min-width:120px;
+    min-height:54px;
   }
 
   #nein{
     background:#ef4444;
     color:white;
-    flex: 0 0 auto;
+    padding:14px 20px;      /* bleibt konstant */
+    min-width:120px;        /* bleibt konstant */
+    min-height:54px;        /* bleibt konstant */
   }
 
   .result{
@@ -113,7 +113,6 @@
     margin-top:6px;
   }
 
-  /* confetti */
   .confetti{
     position:fixed;
     inset:0;
@@ -138,7 +137,6 @@
 
 <div class="card" id="card">
 
-  <!-- START GIF (bleibt bis JA) -->
   <div class="gif" id="startGif">
     <img src="bear_idle.gif" alt="bear gif">
   </div>
@@ -152,7 +150,6 @@
     </div>
   </div>
 
-  <!-- RESULT -->
   <div class="result" id="result">
     <div class="gif">
       <img src="bear_yes.gif" alt="yes gif">
@@ -194,16 +191,63 @@
 
   let clicks = 0;
 
-  // Dominanz nach 10 Klicks, etwas extremer
+  // Ziel: nach 10 Klicks dominiert "Ja" EXTREM
   const STEPS = 10;
-  const START_SCALE = 1.0;
-  const END_SCALE = 3.8;
 
-  function scaleForStep(step){
+  // Baseline (muss zu CSS passen)
+  const BASE = {
+    font: 18,
+    padY: 14,
+    padX: 22,
+    minW: 120,
+    minH: 54,
+    radius: 16
+  };
+
+  // Extremwerte bei Step=10
+  const MAX = {
+    font: 64,     // riesig
+    padY: 34,
+    padX: 70,
+    minW: 360,
+    minH: 140,
+    radius: 28
+  };
+
+  function easeOut(t){
+    // stärker gegen Ende
+    return 1 - Math.pow(1 - t, 2.4);
+  }
+
+  function lerp(a,b,t){ return a + (b-a)*t; }
+
+  function applyGrowth(step){
     const t = Math.min(step, STEPS) / STEPS;
-    // leichte “ease-out” Kurve -> am Ende stärker
-    const eased = 1 - Math.pow(1 - t, 2);
-    return START_SCALE + (END_SCALE - START_SCALE) * eased;
+    const e = easeOut(t);
+
+    const font = Math.round(lerp(BASE.font, MAX.font, e));
+    const padY = Math.round(lerp(BASE.padY, MAX.padY, e));
+    const padX = Math.round(lerp(BASE.padX, MAX.padX, e));
+    const minW = Math.round(lerp(BASE.minW, MAX.minW, e));
+    const minH = Math.round(lerp(BASE.minH, MAX.minH, e));
+    const radius = Math.round(lerp(BASE.radius, MAX.radius, e));
+
+    jaBtn.style.fontSize = font + "px";
+    jaBtn.style.padding = `${padY}px ${padX}px`;
+    jaBtn.style.minWidth = minW + "px";
+    jaBtn.style.minHeight = minH + "px";
+    jaBtn.style.borderRadius = radius + "px";
+
+    // Gap wächst leicht, damit "Nein" sauber nach außen gedrückt wird
+    row.style.gap = (18 + Math.min(step, STEPS) * 6) + "px";
+  }
+
+  function updateNeinText(step){
+    if (step < neinTexts.length) {
+      neinBtn.textContent = neinTexts[step];
+    } else {
+      neinBtn.textContent = "no :(";
+    }
   }
 
   function rand(min,max){ return Math.random()*(max-min)+min }
@@ -224,64 +268,45 @@
     setTimeout(()=>confetti.innerHTML="", 3500);
   }
 
-  function applyGrowth(step){
-    const s = scaleForStep(step);
-    jaBtn.style.transform = `scale(${s})`;
-
-    // Gap wächst leicht mit, damit "Nein" sichtbar nach aussen gedrückt wird
-    const gap = 18 + Math.min(step, STEPS) * 3;
-    row.style.gap = gap + "px";
-  }
-
-  function updateNeinText(step){
-    if (step < neinTexts.length) {
-      neinBtn.textContent = neinTexts[step];
-    } else {
-      neinBtn.textContent = "no :(";
-    }
-  }
-
-  // Initial
+  // Init
   applyGrowth(0);
   updateNeinText(0);
 
-  // iPhone: use pointer events where possible
+  // iPhone: avoid double-trigger by using one handler guard
+  let touchLock = false;
+
+  function onNein(){
+    clicks++;
+    updateNeinText(clicks);
+    applyGrowth(clicks);
+
+    // Optional: ab Step 10 Nein praktisch „weg“ (ausserhalb / nicht klickbar)
+    // Wenn du willst, aktivieren:
+    // if (clicks >= STEPS) neinBtn.style.pointerEvents = "none";
+  }
+
   neinBtn.addEventListener("click", (e)=>{
     e.preventDefault();
-    clicks++;
-
-    updateNeinText(clicks);
-    applyGrowth(clicks);
+    onNein();
   });
 
-  // Bonus: Touchstart also triggers faster on some iPhones (avoid double trigger)
-  let touched = false;
   neinBtn.addEventListener("touchstart", (e)=>{
-    if (touched) return;
-    touched = true;
+    if (touchLock) return;
+    touchLock = true;
     e.preventDefault();
-    clicks++;
-
-    updateNeinText(clicks);
-    applyGrowth(clicks);
-
-    setTimeout(()=>{ touched = false; }, 250);
+    onNein();
+    setTimeout(()=>touchLock=false, 250);
   }, {passive:false});
 
-  jaBtn.addEventListener("click", ()=>{
+  function onJa(){
     area.style.display = "none";
     startGif.style.display = "none";
     result.style.display = "block";
     popConfetti();
-  });
+  }
 
-  jaBtn.addEventListener("touchstart", (e)=>{
-    e.preventDefault();
-    area.style.display = "none";
-    startGif.style.display = "none";
-    result.style.display = "block";
-    popConfetti();
-  }, {passive:false});
+  jaBtn.addEventListener("click", onJa);
+  jaBtn.addEventListener("touchstart", (e)=>{ e.preventDefault(); onJa(); }, {passive:false});
 </script>
 
 </body>
