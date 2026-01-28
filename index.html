@@ -1,313 +1,292 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<title>💘 Valentine</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>💘 Valentine</title>
 
-<style>
-  html, body { height: 100%; }
-  body{
-    margin:0;
-    min-height:100vh;
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    background: linear-gradient(135deg,#ffe6ef,#fff7fb);
-    font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-    overflow:hidden;
-    padding: 18px;
-  }
+  <style>
+    html, body { height: 100%; }
+    body{
+      margin:0;
+      min-height:100vh;
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      background: linear-gradient(135deg,#ffe6ef,#fff7fb);
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      padding:16px;
+    }
 
-  .card{
-    background:white;
-    padding:28px;
-    border-radius:24px;
-    text-align:center;
-    box-shadow:0 20px 60px rgba(0,0,0,.15);
-    width:min(620px, 94vw);
-    position:relative;
-  }
+    .card{
+      width:min(680px, 96vw);
+      height:min(760px, 92vh);
+      background:#fff;
+      border-radius:24px;
+      box-shadow:0 20px 60px rgba(0,0,0,.15);
+      padding:22px;
+      display:flex;
+      flex-direction:column;
+      gap:14px;
+      overflow:hidden;
+    }
 
-  h1{
-    font-size: clamp(24px, 4.2vw, 34px);
-    margin:12px 0 0;
-    line-height:1.15;
-  }
+    .top{
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      gap:10px;
+      transition: opacity .25s ease, transform .25s ease;
+    }
 
-  .gif{
-    width:180px;
-    height:180px;
-    margin:0 auto;
-    border-radius:20px;
-    overflow:hidden;
-    box-shadow:0 12px 30px rgba(0,0,0,.15);
-    background:#fff;
-  }
+    h1{
+      font-size: clamp(22px, 4.2vw, 34px);
+      margin:0;
+      text-align:center;
+      line-height:1.15;
+      transition: opacity .25s ease, transform .25s ease;
+    }
 
-  .gif img{
-    width:100%;
-    height:100%;
-    object-fit:cover;
-    display:block;
-  }
+    .gif{
+      width:180px;
+      height:180px;
+      border-radius:20px;
+      overflow:hidden;
+      box-shadow:0 12px 30px rgba(0,0,0,.15);
+      background:#fff;
+      transition: width .25s ease, height .25s ease, opacity .25s ease, transform .25s ease;
+      flex: 0 0 auto;
+    }
+    .gif img{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      display:block;
+      -webkit-user-select:none; user-select:none;
+      -webkit-touch-callout:none;
+    }
 
-  .buttons{
-    margin-top:22px;
-    height:180px;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    overflow:hidden; /* wichtig: nein kann „rausgedrückt“ werden */
-  }
+    .buttons{
+      flex:1;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:flex-start;
+      gap:14px;
+      padding-top:4px;
+    }
 
-  .row{
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    gap:18px;
-    max-width:100%;
-  }
+    button{
+      border:none;
+      border-radius:18px;
+      box-shadow:0 10px 25px rgba(0,0,0,.2);
+      font-weight:800;
+      cursor:pointer;
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
+      -webkit-user-select:none; user-select:none;
+      -webkit-touch-callout:none;
+      transition: all .18s ease;
+    }
 
-  button{
-    border:none;
-    font-size:18px;
-    font-weight:800;
-    border-radius:16px;
-    cursor:pointer;
-    box-shadow:0 10px 25px rgba(0,0,0,.2);
-    user-select:none;
-    -webkit-tap-highlight-color: transparent;
-    touch-action: manipulation;
-    white-space:nowrap;
-    transition: all .18s ease;
-  }
+    /* JA: wächst und nimmt echten Platz */
+    #ja{
+      background:#22c55e;
+      color:white;
+      width:min(560px, 92%);
+      min-height:56px;
+      font-size:18px;
+      padding:14px 22px;
+      line-height:1.05;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      text-align:center;
+    }
 
-  button, img, h1 { -webkit-user-select:none; user-select:none; -webkit-touch-callout:none; }
+    /* NEIN: bleibt gleich groß, aber muss umbrechen (lesbar bis ca. 10) */
+    #nein{
+      background:#ef4444;
+      color:white;
+      width:min(560px, 92%);
+      min-height:56px;
+      font-size:16px;
+      padding:14px 18px;
+      line-height:1.15;
+      text-align:center;
 
-  #ja{
-    background:#22c55e;
-    color:white;
-    padding:14px 22px;
-    min-width:120px;
-    min-height:54px;
-  }
+      white-space:normal;
+      overflow-wrap:anywhere;
+      word-break:break-word;
+    }
 
-  #nein{
-    background:#ef4444;
-    color:white;
-    padding:14px 20px;      /* bleibt konstant */
-    min-width:120px;        /* bleibt konstant */
-    min-height:54px;        /* bleibt konstant */
-  }
+    .result{
+      display:none;
+      text-align:center;
+    }
+    .result .gif{
+      width:180px;
+      height:180px;
+      margin:0 auto;
+    }
 
-  .result{
-    display:none;
-    margin-top:18px;
-    font-size:22px;
-  }
-
-  .result .gif{
-    width:180px;
-    height:180px;
-    margin-top:6px;
-  }
-
-  .confetti{
-    position:fixed;
-    inset:0;
-    pointer-events:none;
-  }
-  .confetti span{
-    position:absolute;
-    top:-10px;
-    width:10px;
-    height:16px;
-    animation:fall linear forwards;
-    border-radius:3px;
-    opacity:.95;
-  }
-  @keyframes fall{
-    to{ transform:translateY(110vh) rotate(720deg); }
-  }
-</style>
+    /* Confetti */
+    .confetti{
+      position:fixed;
+      inset:0;
+      pointer-events:none;
+      overflow:hidden;
+    }
+    .confetti span{
+      position:absolute;
+      top:-10px;
+      width:10px;
+      height:16px;
+      border-radius:3px;
+      opacity:.95;
+      animation: fall linear forwards;
+    }
+    @keyframes fall{
+      to{ transform:translateY(110vh) rotate(720deg); }
+    }
+  </style>
 </head>
 
 <body>
+  <div class="card" id="card">
 
-<div class="card" id="card">
-
-  <div class="gif" id="startGif">
-    <img src="bear_idle.gif" alt="bear gif">
-  </div>
-
-  <h1>Will you be my Valentine my Love ?</h1>
-
-  <div class="buttons" id="area">
-    <div class="row" id="row">
-      <button id="ja">Ja</button>
-      <button id="nein">Nei</button>
+    <div class="top" id="top">
+      <div class="gif" id="startGif">
+        <img src="bear_idle.gif" alt="bear gif">
+      </div>
+      <h1 id="question">Will you be my Valentine my Love ?</h1>
     </div>
-  </div>
 
-  <div class="result" id="result">
-    <div class="gif">
-      <img src="bear_yes.gif" alt="yes gif">
+    <div class="buttons" id="area">
+      <button id="ja" type="button">Ja</button>
+      <button id="nein" type="button">Nei</button>
     </div>
-    <div style="margin-top:12px">🥰💘 Yesss my Love!!</div>
+
+    <div class="result" id="result">
+      <div class="gif">
+        <img src="bear_yes.gif" alt="yes gif">
+      </div>
+      <div style="margin-top:12px;font-size:22px;">🥰💘 Yesss my Love!!</div>
+    </div>
+
   </div>
 
-</div>
+  <div class="confetti" id="confetti"></div>
 
-<div class="confetti" id="confetti"></div>
+  <script>
+    (function () {
+      const neinTexts = [
+        "Nei",
+        "Bish sicher Ajlin?",
+        "Was wenn ich richtig nett fröge?",
+        "bitte bitte bitte",
+        "ich bring dir Blueme",
+        "und schoggi",
+        "BITTE MIS HERZ",
+        ":(",
+        "Ich stirb weg dir",
+        "bin tot",
+        "Ray 2001 - 2026 RIP",
+        "bitte my love",
+        ":(((((",
+        "BITTE BITTE BITTE",
+        "tot",
+        "no :("
+      ];
 
-<script>
-  const neinTexts = [
-    "Nei",
-    "Bish sicher Ajlin?",
-    "Was wenn ich richtig nett fröge?",
-    "bitte bitte bitte",
-    "ich bring dir Blueme",
-    "und schoggi",
-    "BITTE MIS HERZ",
-    ":(",
-    "Ich stirb weg dir",
-    "bin tot",
-    "Ray 2001 - 2026 RIP",
-    "bitte my love",
-    ":(((((",
-    "BITTE BITTE BITTE",
-    "tot",
-    "no :("
-  ];
+      const jaBtn = document.getElementById("ja");
+      const neinBtn = document.getElementById("nein");
+      const area = document.getElementById("area");
+      const result = document.getElementById("result");
+      const confetti = document.getElementById("confetti");
+      const startGif = document.getElementById("startGif");
+      const top = document.getElementById("top");
+      const question = document.getElementById("question");
 
-  const jaBtn = document.getElementById("ja");
-  const neinBtn = document.getElementById("nein");
-  const area = document.getElementById("area");
-  const row = document.getElementById("row");
-  const result = document.getElementById("result");
-  const confetti = document.getElementById("confetti");
-  const startGif = document.getElementById("startGif");
+      let clicks = 0;
+      const STEPS = 10;
 
-  let clicks = 0;
+      // JA wächst "real"
+      const BASE = { font:18, padY:14, padX:22, minH:56, widthPct:92 };
+      const MAX  = { font:68, padY:36, padX:54, minH:260, widthPct:98 };
 
-  // Ziel: nach 10 Klicks dominiert "Ja" EXTREM
-  const STEPS = 10;
+      function easeOut(t){ return 1 - Math.pow(1 - t, 2.6); }
+      function lerp(a,b,t){ return a + (b-a)*t; }
 
-  // Baseline (muss zu CSS passen)
-  const BASE = {
-    font: 18,
-    padY: 14,
-    padX: 22,
-    minW: 120,
-    minH: 54,
-    radius: 16
-  };
+      function applyGrowth(step){
+        const t = Math.min(step, STEPS) / STEPS;
+        const e = easeOut(t);
 
-  // Extremwerte bei Step=10
-  const MAX = {
-    font: 64,     // riesig
-    padY: 34,
-    padX: 70,
-    minW: 360,
-    minH: 140,
-    radius: 28
-  };
+        const font = Math.round(lerp(BASE.font, MAX.font, e));
+        const padY = Math.round(lerp(BASE.padY, MAX.padY, e));
+        const padX = Math.round(lerp(BASE.padX, MAX.padX, e));
+        const minH = Math.round(lerp(BASE.minH, MAX.minH, e));
+        const widthPct = Math.round(lerp(BASE.widthPct, MAX.widthPct, e));
 
-  function easeOut(t){
-    // stärker gegen Ende
-    return 1 - Math.pow(1 - t, 2.4);
-  }
+        jaBtn.style.fontSize = font + "px";
+        jaBtn.style.padding  = `${padY}px ${padX}px`;
+        jaBtn.style.minHeight = minH + "px";
+        jaBtn.style.width = `min(560px, ${widthPct}%)`;
 
-  function lerp(a,b,t){ return a + (b-a)*t; }
+        // "Ja dominiert": GIF+Frage werden verdrängt (bleiben aber sichtbar)
+        const gifSize = Math.round(lerp(180, 100, e));
+        startGif.style.width = gifSize + "px";
+        startGif.style.height = gifSize + "px";
+        startGif.style.opacity = String(lerp(1, 0.50, e));
+        startGif.style.transform = `translateY(${Math.round(lerp(0, -10, e))}px)`;
 
-  function applyGrowth(step){
-    const t = Math.min(step, STEPS) / STEPS;
-    const e = easeOut(t);
+        question.style.opacity = String(lerp(1, 0.30, e));
+        top.style.transform = `translateY(${Math.round(lerp(0, -12, e))}px)`;
+      }
 
-    const font = Math.round(lerp(BASE.font, MAX.font, e));
-    const padY = Math.round(lerp(BASE.padY, MAX.padY, e));
-    const padX = Math.round(lerp(BASE.padX, MAX.padX, e));
-    const minW = Math.round(lerp(BASE.minW, MAX.minW, e));
-    const minH = Math.round(lerp(BASE.minH, MAX.minH, e));
-    const radius = Math.round(lerp(BASE.radius, MAX.radius, e));
+      function updateNeinText(step){
+        if (step < neinTexts.length) neinBtn.textContent = neinTexts[step];
+        else neinBtn.textContent = "no :(";
+      }
 
-    jaBtn.style.fontSize = font + "px";
-    jaBtn.style.padding = `${padY}px ${padX}px`;
-    jaBtn.style.minWidth = minW + "px";
-    jaBtn.style.minHeight = minH + "px";
-    jaBtn.style.borderRadius = radius + "px";
+      function rand(min,max){ return Math.random()*(max-min)+min; }
+      function popConfetti(){
+        confetti.innerHTML = "";
+        const colors = ["#ef4444","#22c55e","#eab308","#3b82f6","#ec4899"];
+        for(let i=0;i<120;i++){
+          const s = document.createElement("span");
+          s.style.left = rand(0,100) + "vw";
+          s.style.background = colors[Math.floor(Math.random()*colors.length)];
+          s.style.animationDuration = rand(1.4, 3.0) + "s";
+          s.style.animationDelay = rand(0, 0.2) + "s";
+          s.style.width = rand(7, 12) + "px";
+          s.style.height = rand(10, 18) + "px";
+          confetti.appendChild(s);
+        }
+        setTimeout(()=>confetti.innerHTML="", 3500);
+      }
 
-    // Gap wächst leicht, damit "Nein" sauber nach außen gedrückt wird
-    row.style.gap = (18 + Math.min(step, STEPS) * 6) + "px";
-  }
+      function onNein(){
+        clicks++;
+        updateNeinText(clicks);
+        applyGrowth(clicks);
+      }
 
-  function updateNeinText(step){
-    if (step < neinTexts.length) {
-      neinBtn.textContent = neinTexts[step];
-    } else {
-      neinBtn.textContent = "no :(";
-    }
-  }
+      function onJa(){
+        area.style.display = "none";
+        top.style.display = "none";
+        result.style.display = "block";
+        popConfetti();
+      }
 
-  function rand(min,max){ return Math.random()*(max-min)+min }
+      // Init
+      applyGrowth(0);
+      updateNeinText(0);
 
-  function popConfetti(){
-    confetti.innerHTML = "";
-    const colors = ["#ef4444","#22c55e","#eab308","#3b82f6","#ec4899"];
-    for(let i=0;i<120;i++){
-      const s = document.createElement("span");
-      s.style.left = rand(0,100) + "vw";
-      s.style.background = colors[Math.floor(Math.random()*colors.length)];
-      s.style.animationDuration = rand(1.4, 3.0) + "s";
-      s.style.animationDelay = rand(0, 0.2) + "s";
-      s.style.width = rand(7, 12) + "px";
-      s.style.height = rand(10, 18) + "px";
-      confetti.appendChild(s);
-    }
-    setTimeout(()=>confetti.innerHTML="", 3500);
-  }
-
-  // Init
-  applyGrowth(0);
-  updateNeinText(0);
-
-  // iPhone: avoid double-trigger by using one handler guard
-  let touchLock = false;
-
-  function onNein(){
-    clicks++;
-    updateNeinText(clicks);
-    applyGrowth(clicks);
-
-    // Optional: ab Step 10 Nein praktisch „weg“ (ausserhalb / nicht klickbar)
-    // Wenn du willst, aktivieren:
-    // if (clicks >= STEPS) neinBtn.style.pointerEvents = "none";
-  }
-
-  neinBtn.addEventListener("click", (e)=>{
-    e.preventDefault();
-    onNein();
-  });
-
-  neinBtn.addEventListener("touchstart", (e)=>{
-    if (touchLock) return;
-    touchLock = true;
-    e.preventDefault();
-    onNein();
-    setTimeout(()=>touchLock=false, 250);
-  }, {passive:false});
-
-  function onJa(){
-    area.style.display = "none";
-    startGif.style.display = "none";
-    result.style.display = "block";
-    popConfetti();
-  }
-
-  jaBtn.addEventListener("click", onJa);
-  jaBtn.addEventListener("touchstart", (e)=>{ e.preventDefault(); onJa(); }, {passive:false});
-</script>
-
+      // Use ONE reliable event: pointerup (works on iPhone + Mac)
+      neinBtn.addEventListener("pointerup", (e) => { e.preventDefault(); onNein(); });
+      jaBtn.addEventListener("pointerup", (e) => { e.preventDefault(); onJa(); });
+    })();
+  </script>
 </body>
 </html>
