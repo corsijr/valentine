@@ -13,8 +13,8 @@
       align-items:center;
       background: linear-gradient(135deg,#ffe6ef,#fff7fb);
       font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-      padding:16px;
       overflow:hidden;
+      padding:16px;
     }
 
     .card{
@@ -29,6 +29,7 @@
       gap:14px;
       overflow:hidden;
       position:relative;
+      transition: all .55s cubic-bezier(.2,.9,.2,1);
     }
 
     .top{
@@ -36,7 +37,7 @@
       flex-direction:column;
       align-items:center;
       gap:10px;
-      transition: opacity .25s ease, transform .25s ease;
+      transition: opacity .45s ease, transform .45s ease;
     }
 
     h1{
@@ -44,7 +45,7 @@
       margin:0;
       text-align:center;
       line-height:1.15;
-      transition: opacity .25s ease, transform .25s ease;
+      transition: opacity .45s ease, transform .45s ease;
     }
 
     .gif{
@@ -54,7 +55,7 @@
       overflow:hidden;
       box-shadow:0 12px 30px rgba(0,0,0,.15);
       background:#fff;
-      transition: all .25s ease;
+      transition: all .45s ease;
       flex: 0 0 auto;
     }
     .gif img{
@@ -66,13 +67,14 @@
       -webkit-touch-callout:none;
     }
 
+    /* IMPORTANT: constant spacing controlled by gap */
     .buttons{
       flex:1;
       display:flex;
       flex-direction:column;
       align-items:center;
       justify-content:flex-start;
-      gap:14px;
+      gap:14px;              /* constant distance between Ja & Nein */
       height:100%;
     }
 
@@ -86,29 +88,30 @@
       touch-action: manipulation;
       -webkit-user-select:none; user-select:none;
       -webkit-touch-callout:none;
-      transition: all .25s ease;
+      transition: all .55s cubic-bezier(.2,.9,.2,1);
     }
 
-    /* JA: wächst und nimmt echten Platz */
+    /* JA grows "real" */
     #ja{
       background:#22c55e;
       color:white;
-      width:min(560px, 92%);
-      min-height:56px;
-      font-size:18px;
+      width:min(620px, 92%);
+      min-height:60px;
+      font-size:20px;
       padding:14px 22px;
       line-height:1.05;
       display:flex;
       align-items:center;
       justify-content:center;
       text-align:center;
+      transform: translateZ(0);
     }
 
-    /* NEIN: bleibt konstant, aber Text umbrechen */
+    /* NEIN stays constant (NO translateY anymore) */
     #nein{
       background:#ef4444;
       color:white;
-      width:min(560px, 92%);
+      width:min(620px, 92%);
       min-height:56px;
       font-size:16px;
       padding:14px 18px;
@@ -117,29 +120,114 @@
       white-space:normal;
       overflow-wrap:anywhere;
       word-break:break-word;
+      transform: translateZ(0);
     }
 
-    /* Result view (zweiter Bär) */
     .result{
       display:none;
       flex:1;
       align-items:center;
       justify-content:center;
       flex-direction:column;
+      gap:14px;
       text-align:center;
-      gap:12px;
     }
     .result .gif{
-      width:200px;
-      height:200px;
+      width:210px;
+      height:210px;
       box-shadow:0 14px 35px rgba(0,0,0,.18);
     }
     .result .msg{
       font-size:22px;
-      font-weight:800;
+      font-weight:900;
     }
 
-    /* Confetti */
+    .herWrap{
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      gap:10px;
+      margin-top:6px;
+    }
+
+    .herTitle{
+      font-size:16px;
+      font-weight:900;
+      opacity:0;
+      transform: translateY(8px);
+      transition: opacity .7s ease, transform .7s ease;
+      margin-bottom:2px;
+    }
+
+    .herTitle .heart{
+      display:inline-block;
+      margin-left:6px;
+      transform-origin:center;
+      filter: drop-shadow(0 6px 10px rgba(0,0,0,.15));
+      animation: heartbeat 1.75s ease-in-out infinite;
+      animation-play-state: paused;
+    }
+
+    @keyframes heartbeat{
+      0%, 100% { transform: scale(1); }
+      20% { transform: scale(1.08); }
+      40% { transform: scale(1.02); }
+      60% { transform: scale(1.09); }
+      80% { transform: scale(1.03); }
+    }
+
+    .polaroid{
+      width:112px;
+      background:#fff;
+      border-radius:16px;
+      padding:10px 10px 18px;
+      box-shadow:0 16px 40px rgba(0,0,0,.20);
+      border: 1px solid rgba(0,0,0,.06);
+
+      opacity:0;
+      transform: translateY(14px) rotate(-3deg) scale(0.98);
+      transition: opacity .75s ease, transform .75s ease, filter .75s ease;
+      filter: blur(2px);
+
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
+      user-select:none;
+    }
+
+    .polaroid .pic{
+      width:92px;
+      height:128px;
+      border-radius:12px;
+      overflow:hidden;
+      background:#f6f6f6;
+    }
+    .polaroid .pic img{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      display:block;
+      -webkit-user-select:none; user-select:none;
+      -webkit-touch-callout:none;
+    }
+
+    .result.showHer .herTitle{
+      opacity:1;
+      transform: translateY(0);
+    }
+    .result.showHer .herTitle .heart{
+      animation-play-state: running;
+    }
+    .result.showHer .polaroid{
+      opacity:1;
+      filter: blur(0);
+      transform: translateY(0) rotate(-3deg) scale(1);
+    }
+
+    .polaroid:active{
+      transform: translateY(0) rotate(-1.5deg) scale(1.02);
+    }
+
     .confetti{
       position:fixed;
       inset:0;
@@ -160,12 +248,14 @@
       to{ transform:translateY(110vh) rotate(720deg); }
     }
 
-    /* Fullscreen takeover state */
-    .fullscreen {
+    .fullscreen{
+      position:fixed;
+      inset:0;
       width:100vw !important;
       height:100vh !important;
       border-radius:0 !important;
       padding:0 !important;
+      z-index:5000;
     }
     .fullscreen .buttons{
       justify-content:stretch;
@@ -174,8 +264,8 @@
     }
     .fullscreen #ja{
       width:100% !important;
-      min-height:100% !important;
       height:100% !important;
+      min-height:100% !important;
       border-radius:0 !important;
       font-size:96px !important;
       padding:0 !important;
@@ -185,7 +275,6 @@
 
 <body>
   <div class="card" id="card">
-
     <div class="top" id="top">
       <div class="gif" id="startGif">
         <img src="bear_idle.gif" alt="bear gif">
@@ -202,31 +291,45 @@
       <div class="gif">
         <img src="bear_yes.gif" alt="yes gif">
       </div>
-      <div class="msg">🥰💘 Yesss my Love!!</div>
-    </div>
 
+      <div class="msg">🥰💘 Yesss my Love!!</div>
+
+      <div class="herWrap">
+        <div class="herTitle">
+          My Valentine <span class="heart">💘</span>
+        </div>
+
+        <div class="polaroid" id="polaroid">
+          <div class="pic">
+            <img src="her.jpg" alt="her photo">
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 
   <div class="confetti" id="confetti"></div>
 
   <script>
     (function () {
+      "use strict";
+
       const neinTexts = [
         "Nei",
         "Bish sicher Ajlin?",
         "Was wenn ich richtig nett fröge?",
-        "bitte bitte bitte",
+        "NEI I DIR INE!!",
         "ich bring dir Blueme",
         "und schoggi",
-        "BITTE MIS HERZ",
-        ":(",
-        "Ich stirb weg dir",
-        "bin tot",
-        "Ray 2001 - 2026 RIP",
-        "bitte my love",
-        ":(((((",
-        "BITTE BITTE BITTE",
+        "ok denfall ned",
+        "</3",
+        "Du bitch",
         "tot",
+        "Ray 2001 - 2026 RIP",
+        "Fick dichhh",
+        ":(((((",
+        "BITTEEE!!!",
+        "...",
         "no :("
       ];
 
@@ -239,51 +342,54 @@
       const area = document.getElementById("area");
       const result = document.getElementById("result");
       const confetti = document.getElementById("confetti");
+      const polaroid = document.getElementById("polaroid");
+
+      if (!jaBtn || !neinBtn || !card || !top || !startGif || !question || !area || !result || !confetti || !polaroid) {
+        alert("Error: Missing elements in HTML. Please re-copy the full code.");
+        return;
+      }
 
       let clicks = 0;
+      const FINAL_STEP = 16;
 
-      // Bis 10 dominiert es stark (wie vorher)
-      const STEPS = 10;
+      // Bigger growth per click
+      const BASE = { font: 20, padY: 14, padX: 22, minH: 60, widthPct: 92 };
+      const MAX  = { font: 110, padY: 52, padX: 96, minH: 420, widthPct: 100 };
 
-      // Ab 16 (letztes "no :(") wird fullscreen takeover aktiv
-      const FULLSCREEN_STEP = 16;
-
-      const BASE = { font:18, padY:14, padX:22, minH:56, widthPct:92 };
-      const MAX  = { font:68, padY:36, padX:54, minH:260, widthPct:98 };
-
-      function easeOut(t){ return 1 - Math.pow(1 - t, 2.6); }
-      function lerp(a,b,t){ return a + (b-a)*t; }
+      function lerp(a, b, t) { return a + (b - a) * t; }
 
       function applyGrowth(step){
-        // normales Wachstum bis 10
-        const t = Math.min(step, STEPS) / STEPS;
-        const e = easeOut(t);
+        const clamped = Math.min(step, FINAL_STEP);
+        const t = clamped / FINAL_STEP;
 
-        const font = Math.round(lerp(BASE.font, MAX.font, e));
-        const padY = Math.round(lerp(BASE.padY, MAX.padY, e));
-        const padX = Math.round(lerp(BASE.padX, MAX.padX, e));
-        const minH = Math.round(lerp(BASE.minH, MAX.minH, e));
-        const widthPct = Math.round(lerp(BASE.widthPct, MAX.widthPct, e));
+        // each click is a noticeable jump; CSS transition animates it
+        const q = Math.round(t * FINAL_STEP) / FINAL_STEP;
+
+        const font = Math.round(lerp(BASE.font, MAX.font, q));
+        const padY = Math.round(lerp(BASE.padY, MAX.padY, q));
+        const padX = Math.round(lerp(BASE.padX, MAX.padX, q));
+        const minH = Math.round(lerp(BASE.minH, MAX.minH, q));
+        const widthPct = Math.round(lerp(BASE.widthPct, MAX.widthPct, q));
 
         jaBtn.style.fontSize = font + "px";
-        jaBtn.style.padding  = `${padY}px ${padX}px`;
+        jaBtn.style.padding = padY + "px " + padX + "px";
         jaBtn.style.minHeight = minH + "px";
-        jaBtn.style.width = `min(560px, ${widthPct}%)`;
+        jaBtn.style.width = "min(620px, " + widthPct + "%)";
 
-        // GIF + Frage verdrängen (bis 10)
-        const gifSize = Math.round(lerp(180, 100, e));
+        // keep constant spacing: DON'T move Nein.
+        // Just reduce top section so Ja visually dominates.
+        const gifSize = Math.round(lerp(180, 70, q));
         startGif.style.width = gifSize + "px";
         startGif.style.height = gifSize + "px";
-        startGif.style.opacity = String(lerp(1, 0.50, e));
-        startGif.style.transform = `translateY(${Math.round(lerp(0, -10, e))}px)`;
-        question.style.opacity = String(lerp(1, 0.30, e));
-        top.style.transform = `translateY(${Math.round(lerp(0, -12, e))}px)`;
+        startGif.style.opacity = String(lerp(1, 0.20, q));
+        question.style.opacity = String(lerp(1, 0.08, q));
+        top.style.transform = "translateY(" + Math.round(lerp(0, -22, q)) + "px)";
 
-        // ✅ Fullscreen takeover erst beim 16. Klick
-        if(step >= FULLSCREEN_STEP){
+        // final fullscreen takeover after last "no :("
+        if(step >= FINAL_STEP){
           neinBtn.style.display = "none";
           top.style.display = "none";
-          card.classList.add("fullscreen");
+          requestAnimationFrame(() => card.classList.add("fullscreen"));
         }
       }
 
@@ -292,7 +398,8 @@
         else neinBtn.textContent = "no :(";
       }
 
-      function rand(min,max){ return Math.random()*(max-min)+min; }
+      function rand(min, max){ return Math.random() * (max - min) + min; }
+
       function popConfetti(){
         confetti.innerHTML = "";
         const colors = ["#ef4444","#22c55e","#eab308","#3b82f6","#ec4899"];
@@ -316,20 +423,33 @@
       }
 
       function onJa(){
-        // show second bear + message
         area.style.display = "none";
         top.style.display = "none";
         result.style.display = "flex";
         popConfetti();
+
+        result.classList.remove("showHer");
+        setTimeout(() => result.classList.add("showHer"), 900);
       }
 
-      // Init
+      neinBtn.addEventListener("pointerup", (e)=>{ e.preventDefault(); e.stopPropagation(); onNein(); }, { passive: false });
+      jaBtn.addEventListener("pointerup", (e)=>{ e.preventDefault(); e.stopPropagation(); onJa(); }, { passive: false });
+
+      polaroid.addEventListener("pointerup", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        polaroid.animate(
+          [
+            { transform: "translateY(0) rotate(-3deg) scale(1)" },
+            { transform: "translateY(-2px) rotate(-1deg) scale(1.03)" },
+            { transform: "translateY(0) rotate(-3deg) scale(1)" }
+          ],
+          { duration: 380, easing: "cubic-bezier(.2,.9,.2,1)" }
+        );
+      }, { passive: false });
+
       applyGrowth(0);
       updateNeinText(0);
-
-      // One reliable event: pointerup (iPhone + Mac)
-      neinBtn.addEventListener("pointerup", (e) => { e.preventDefault(); onNein(); });
-      jaBtn.addEventListener("pointerup", (e) => { e.preventDefault(); onJa(); });
     })();
   </script>
 </body>
