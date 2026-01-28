@@ -74,6 +74,7 @@
       justify-content:flex-start;
       gap:14px;
       padding-top:4px;
+      height:100%;
     }
 
     button{
@@ -89,7 +90,7 @@
       transition: all .18s ease;
     }
 
-    /* JA: wächst und nimmt echten Platz */
+    /* JA: grows and takes real space */
     #ja{
       background:#22c55e;
       color:white;
@@ -104,7 +105,7 @@
       text-align:center;
     }
 
-    /* NEIN: bleibt gleich groß, aber muss umbrechen (lesbar bis ca. 10) */
+    /* NEIN: stays constant size, wraps text */
     #nein{
       background:#ef4444;
       color:white;
@@ -211,7 +212,7 @@
       let clicks = 0;
       const STEPS = 10;
 
-      // JA wächst "real"
+      // JA grows "real"
       const BASE = { font:18, padY:14, padX:22, minH:56, widthPct:92 };
       const MAX  = { font:68, padY:36, padX:54, minH:260, widthPct:98 };
 
@@ -233,7 +234,7 @@
         jaBtn.style.minHeight = minH + "px";
         jaBtn.style.width = `min(560px, ${widthPct}%)`;
 
-        // "Ja dominiert": GIF+Frage werden verdrängt (bleiben aber sichtbar)
+        // Push visual dominance: GIF+question get smaller/faded
         const gifSize = Math.round(lerp(180, 100, e));
         startGif.style.width = gifSize + "px";
         startGif.style.height = gifSize + "px";
@@ -242,6 +243,20 @@
 
         question.style.opacity = String(lerp(1, 0.30, e));
         top.style.transform = `translateY(${Math.round(lerp(0, -12, e))}px)`;
+
+        // ✅ After 10 clicks: "Ja" takes over everything; "Nein" disappears
+        if (step >= STEPS) {
+          neinBtn.style.display = "none";   // not visible, not clickable
+          top.style.display = "none";       // hide GIF + question
+
+          // Make Ja fill the whole remaining area
+          area.style.justifyContent = "stretch";
+          jaBtn.style.width = "100%";
+          jaBtn.style.minHeight = "100%";
+          jaBtn.style.borderRadius = "22px";
+          jaBtn.style.fontSize = "78px";
+          jaBtn.style.padding = "48px 20px";
+        }
       }
 
       function updateNeinText(step){
@@ -283,7 +298,7 @@
       applyGrowth(0);
       updateNeinText(0);
 
-      // Use ONE reliable event: pointerup (works on iPhone + Mac)
+      // One reliable event: pointerup (works on iPhone + Mac)
       neinBtn.addEventListener("pointerup", (e) => { e.preventDefault(); onNein(); });
       jaBtn.addEventListener("pointerup", (e) => { e.preventDefault(); onJa(); });
     })();
