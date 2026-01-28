@@ -6,11 +6,7 @@
   <title>💘 Valentine</title>
 
   <style>
-    html, body {
-      height: 100%;
-      margin: 0;
-    }
-
+    html, body { height: 100%; margin: 0; }
     body{
       display:flex;
       justify-content:center;
@@ -33,7 +29,6 @@
       gap:14px;
       overflow:hidden;
       position:relative;
-      z-index:1;
     }
 
     .top{
@@ -60,15 +55,15 @@
       box-shadow:0 12px 30px rgba(0,0,0,.15);
       background:#fff;
       transition: all .25s ease;
+      flex: 0 0 auto;
     }
-
     .gif img{
       width:100%;
       height:100%;
       object-fit:cover;
       display:block;
-      -webkit-user-select:none;
-      user-select:none;
+      -webkit-user-select:none; user-select:none;
+      -webkit-touch-callout:none;
     }
 
     .buttons{
@@ -89,9 +84,12 @@
       cursor:pointer;
       -webkit-tap-highlight-color: transparent;
       touch-action: manipulation;
+      -webkit-user-select:none; user-select:none;
+      -webkit-touch-callout:none;
       transition: all .25s ease;
     }
 
+    /* JA: wächst und nimmt echten Platz */
     #ja{
       background:#22c55e;
       color:white;
@@ -99,12 +97,14 @@
       min-height:56px;
       font-size:18px;
       padding:14px 22px;
+      line-height:1.05;
       display:flex;
       align-items:center;
       justify-content:center;
       text-align:center;
     }
 
+    /* NEIN: bleibt konstant, aber Text umbrechen */
     #nein{
       background:#ef4444;
       color:white;
@@ -112,22 +112,40 @@
       min-height:56px;
       font-size:16px;
       padding:14px 18px;
+      line-height:1.15;
       text-align:center;
       white-space:normal;
       overflow-wrap:anywhere;
       word-break:break-word;
     }
 
+    /* Result view (zweiter Bär) */
     .result{
       display:none;
+      flex:1;
+      align-items:center;
+      justify-content:center;
+      flex-direction:column;
       text-align:center;
+      gap:12px;
+    }
+    .result .gif{
+      width:200px;
+      height:200px;
+      box-shadow:0 14px 35px rgba(0,0,0,.18);
+    }
+    .result .msg{
+      font-size:22px;
+      font-weight:800;
     }
 
+    /* Confetti */
     .confetti{
       position:fixed;
       inset:0;
       pointer-events:none;
-      z-index:5;
+      overflow:hidden;
+      z-index:9999;
     }
     .confetti span{
       position:absolute;
@@ -141,12 +159,33 @@
     @keyframes fall{
       to{ transform:translateY(110vh) rotate(720deg); }
     }
+
+    /* Fullscreen takeover state */
+    .fullscreen {
+      width:100vw !important;
+      height:100vh !important;
+      border-radius:0 !important;
+      padding:0 !important;
+    }
+    .fullscreen .buttons{
+      justify-content:stretch;
+      gap:0;
+      padding:0;
+    }
+    .fullscreen #ja{
+      width:100% !important;
+      min-height:100% !important;
+      height:100% !important;
+      border-radius:0 !important;
+      font-size:96px !important;
+      padding:0 !important;
+    }
   </style>
 </head>
 
 <body>
-
   <div class="card" id="card">
+
     <div class="top" id="top">
       <div class="gif" id="startGif">
         <img src="bear_idle.gif" alt="bear gif">
@@ -158,84 +197,140 @@
       <button id="ja" type="button">Ja</button>
       <button id="nein" type="button">Nei</button>
     </div>
+
+    <div class="result" id="result">
+      <div class="gif">
+        <img src="bear_yes.gif" alt="yes gif">
+      </div>
+      <div class="msg">🥰💘 Yesss my Love!!</div>
+    </div>
+
   </div>
 
   <div class="confetti" id="confetti"></div>
 
-<script>
-(function(){
-  const neinTexts = [
-    "Nei","Bish sicher Ajlin?","Was wenn ich richtig nett fröge?",
-    "bitte bitte bitte","ich bring dir Blueme","und schoggi",
-    "BITTE MIS HERZ",":(","Ich stirb weg dir","bin tot",
-    "Ray 2001 - 2026 RIP","bitte my love",":(((((",
-    "BITTE BITTE BITTE","tot","no :("
-  ];
+  <script>
+    (function () {
+      const neinTexts = [
+        "Nei",
+        "Bish sicher Ajlin?",
+        "Was wenn ich richtig nett fröge?",
+        "bitte bitte bitte",
+        "ich bring dir Blueme",
+        "und schoggi",
+        "BITTE MIS HERZ",
+        ":(",
+        "Ich stirb weg dir",
+        "bin tot",
+        "Ray 2001 - 2026 RIP",
+        "bitte my love",
+        ":(((((",
+        "BITTE BITTE BITTE",
+        "tot",
+        "no :("
+      ];
 
-  const ja = document.getElementById("ja");
-  const nein = document.getElementById("nein");
-  const card = document.getElementById("card");
-  const area = document.getElementById("area");
-  const top = document.getElementById("top");
-  const startGif = document.getElementById("startGif");
-  const question = document.getElementById("question");
-  const confetti = document.getElementById("confetti");
+      const jaBtn = document.getElementById("ja");
+      const neinBtn = document.getElementById("nein");
+      const card = document.getElementById("card");
+      const top = document.getElementById("top");
+      const startGif = document.getElementById("startGif");
+      const question = document.getElementById("question");
+      const area = document.getElementById("area");
+      const result = document.getElementById("result");
+      const confetti = document.getElementById("confetti");
 
-  let clicks = 0;
-  const FULLSCREEN_STEP = 16;
+      let clicks = 0;
 
-  function growJa(step){
-    if(step < FULLSCREEN_STEP){
-      ja.style.fontSize = (18 + step * 4) + "px";
-      ja.style.padding = (14 + step * 2) + "px 24px";
-      ja.style.minHeight = (56 + step * 14) + "px";
+      // Bis 10 dominiert es stark (wie vorher)
+      const STEPS = 10;
 
-      startGif.style.opacity = 1 - step * 0.04;
-      question.style.opacity = 1 - step * 0.05;
-    }
+      // Ab 16 (letztes "no :(") wird fullscreen takeover aktiv
+      const FULLSCREEN_STEP = 16;
 
-    if(step >= FULLSCREEN_STEP){
-      nein.style.display = "none";
-      top.style.display = "none";
-      card.style.padding = "0";
-      card.style.borderRadius = "0";
-      card.style.width = "100vw";
-      card.style.height = "100vh";
+      const BASE = { font:18, padY:14, padX:22, minH:56, widthPct:92 };
+      const MAX  = { font:68, padY:36, padX:54, minH:260, widthPct:98 };
 
-      ja.style.position = "fixed";
-      ja.style.inset = "0";
-      ja.style.width = "100vw";
-      ja.style.height = "100vh";
-      ja.style.borderRadius = "0";
-      ja.style.fontSize = "96px";
-      ja.style.padding = "0";
-      ja.textContent = "JA 💘";
-    }
-  }
+      function easeOut(t){ return 1 - Math.pow(1 - t, 2.6); }
+      function lerp(a,b,t){ return a + (b-a)*t; }
 
-  function popConfetti(){
-    confetti.innerHTML = "";
-    const colors = ["#ef4444","#22c55e","#ec4899","#eab308"];
-    for(let i=0;i<140;i++){
-      const s = document.createElement("span");
-      s.style.left = Math.random()*100 + "vw";
-      s.style.background = colors[Math.floor(Math.random()*colors.length)];
-      s.style.animationDuration = 1.5 + Math.random()*2 + "s";
-      confetti.appendChild(s);
-    }
-  }
+      function applyGrowth(step){
+        // normales Wachstum bis 10
+        const t = Math.min(step, STEPS) / STEPS;
+        const e = easeOut(t);
 
-  nein.addEventListener("pointerup", ()=>{
-    clicks++;
-    nein.textContent = neinTexts[Math.min(clicks, neinTexts.length-1)];
-    growJa(clicks);
-  });
+        const font = Math.round(lerp(BASE.font, MAX.font, e));
+        const padY = Math.round(lerp(BASE.padY, MAX.padY, e));
+        const padX = Math.round(lerp(BASE.padX, MAX.padX, e));
+        const minH = Math.round(lerp(BASE.minH, MAX.minH, e));
+        const widthPct = Math.round(lerp(BASE.widthPct, MAX.widthPct, e));
 
-  ja.addEventListener("pointerup", ()=>{
-    popConfetti();
-  });
-})();
-</script>
+        jaBtn.style.fontSize = font + "px";
+        jaBtn.style.padding  = `${padY}px ${padX}px`;
+        jaBtn.style.minHeight = minH + "px";
+        jaBtn.style.width = `min(560px, ${widthPct}%)`;
 
+        // GIF + Frage verdrängen (bis 10)
+        const gifSize = Math.round(lerp(180, 100, e));
+        startGif.style.width = gifSize + "px";
+        startGif.style.height = gifSize + "px";
+        startGif.style.opacity = String(lerp(1, 0.50, e));
+        startGif.style.transform = `translateY(${Math.round(lerp(0, -10, e))}px)`;
+        question.style.opacity = String(lerp(1, 0.30, e));
+        top.style.transform = `translateY(${Math.round(lerp(0, -12, e))}px)`;
+
+        // ✅ Fullscreen takeover erst beim 16. Klick
+        if(step >= FULLSCREEN_STEP){
+          neinBtn.style.display = "none";
+          top.style.display = "none";
+          card.classList.add("fullscreen");
+        }
+      }
+
+      function updateNeinText(step){
+        if (step < neinTexts.length) neinBtn.textContent = neinTexts[step];
+        else neinBtn.textContent = "no :(";
+      }
+
+      function rand(min,max){ return Math.random()*(max-min)+min; }
+      function popConfetti(){
+        confetti.innerHTML = "";
+        const colors = ["#ef4444","#22c55e","#eab308","#3b82f6","#ec4899"];
+        for(let i=0;i<140;i++){
+          const s = document.createElement("span");
+          s.style.left = rand(0,100) + "vw";
+          s.style.background = colors[Math.floor(Math.random()*colors.length)];
+          s.style.animationDuration = rand(1.4, 3.0) + "s";
+          s.style.animationDelay = rand(0, 0.2) + "s";
+          s.style.width = rand(7, 12) + "px";
+          s.style.height = rand(10, 18) + "px";
+          confetti.appendChild(s);
+        }
+        setTimeout(()=>confetti.innerHTML="", 3500);
+      }
+
+      function onNein(){
+        clicks++;
+        updateNeinText(clicks);
+        applyGrowth(clicks);
+      }
+
+      function onJa(){
+        // show second bear + message
+        area.style.display = "none";
+        top.style.display = "none";
+        result.style.display = "flex";
+        popConfetti();
+      }
+
+      // Init
+      applyGrowth(0);
+      updateNeinText(0);
+
+      // One reliable event: pointerup (iPhone + Mac)
+      neinBtn.addEventListener("pointerup", (e) => { e.preventDefault(); onNein(); });
+      jaBtn.addEventListener("pointerup", (e) => { e.preventDefault(); onJa(); });
+    })();
+  </script>
 </body>
 </html>
